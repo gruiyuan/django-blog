@@ -1,0 +1,30 @@
+{% extends 'blog/full-base.html' %}
+{% block main %}
+    {% for post in post_list %}
+	<article class="post post-{{ post.pk }}">
+		<header class="entry-header">
+			<h1 class="entry-title">
+				<a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+			</h1>
+			<div class="entry-meta">
+				<span class="post-category"><a href="#">{{ post.category }}</a></span>
+			
+				<span class="post-date"><a href="#"><time class="entry-date"
+                                                          datetime="{{ post.created_time }}">{{ post.created_time }}</time></a></span>
+			
+				<span class="post-author"><a href="#">{{ post.author }}</a></span>
+			
+				<span class="comments-link"><a href="">{{ post.comment_set.count }} Comments</a></span>
+			</div>
+		</header>
+		<div class="entry-content clearfix">
+			<p>{{ post.excerpt }}</p>
+			<div class="read-more cl-effect-14">
+				<a href="{{ post.get_absolute_url }}" class="more-link">Continue reading <span class="meta-nav">→</span></a>
+			</div>
+		</div>
+	</article>
+    {% empty %}
+        <div class="no-post">No articles!</div>
+    {% endfor %}
+{% endblock main %}

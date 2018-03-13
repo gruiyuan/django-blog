@@ -1,0 +1,93 @@
+{% extends 'blog/base.html' %}
+{% block main %}
+    {% if post.is_show or request.user == post.author %}
+        <article class="post post-{{ post.pk }}">
+            <header class="entry-header">
+                <h1 class="entry-title">{{ post.title }}</h1>
+                <div class="entry-meta">
+                    <span class="post-category"><a href="#">{{ post.category }}</a></span>
+                    <span class="post-date"><a href="#"><time class="entry-date"
+                                                              datetime="{{ post.created_time }}">{{ post.created_time }}</time></a></span>
+                    <span class="post-author"><a href="#">{{ post.author }}</a></span>
+                    <span class="comments-link"><a href="#">{{ post.comment_set.count }} 评论</a></span>
+                    <span class="views-count"><a href="#">{{ post.views }} 阅读</a></span>
+                </div>
+            </header>
+            <div class="entry-content clearfix">
+            <!-- 这里使用safe过滤器解除django的转义 -->
+                {{ post.body|safe }}
+                <div class="widget-tag-cloud">
+                    <ul>
+                        标签：
+                        {% for tag in post.tags.all %}
+                            <li><a href="{% url 'blog:tag' tag.pk %}"># {{ tag.name }}</a> </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </article>
+        <section class="comment-area" id="comment-area">
+            <hr>
+        {% if user.is_authenticated %}
+            <h3>发表评论</h3>
+            <form action="{% url 'comments:post_comment' post.pk user.pk %}" method="post" class="comment-form">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form.text }}
+                        {{ form.text.errors }}
+                        <div align="right"><button type="submit" class="comment-btn">发表</button></div>
+                    </div>
+                </div>    <!-- row -->
+            </form>
+        {% else %}
+            <div class="flex-center top-gap login-panel p-7">
+                <div>
+                    <div class="text-muted text-center login-header">
+                        <span><a href="{% url 'login' %}?next={{ request.path }}">登录</a> 后回复</span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+            <div class="comment-list-panel">
+                <h3>评论列表，共 <span>{{ post.comment_set.count }}</span> 条评论</h3>
+                <ul class="comment-list list-unstyled">
+                    {% for comment in comment_list %}
+                    <li class="comment-item">
+                        {% if comment.user.nickname %}
+                        <span class="nickname">{{ comment.user.nickname }}</span>
+                        {% else %}
+                        <span class="nickname">{{ comment.user.username }}</span>
+                        {% endif %}
+                        <time class="submit-date" datetime="{{ comment.created_time }}">{{ comment.created_time }}</time>
+                        <div class="text">
+                            {{ comment.text }}
+                        </div>
+                    </li>
+                    {% empty %}
+                    暂无评论
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    {% else %}
+         <article class="post post-{{ post.pk }}">
+            <header class="entry-header">
+            </header>
+            <div class="entry-content clearfix">
+                作者设置该文章为仅自己可见...
+            </div>
+        </article>
+        <section class="comment-area" id="comment-area">
+            <hr>
+        </section>
+    {% endif %}
+{% endblock main %}
+{% block toc %}
+    <div class="widget widget-content">
+        <h3 class="widget-title">文章目录</h3>
+        {% if post.is_show or request.user == post.author %}
+        {{ post.toc|safe }}
+        {% endif %}
+    </div>
+{% endblock toc %}
